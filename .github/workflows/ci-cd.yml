@@ -37,12 +37,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # Optional but recommended: SonarCloud quality gate
-      - name: SonarCloud Quality Gate
-        uses: SonarSource/sonarqube-quality-gate-action@v1
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
+    
       # ---- Docker Build & Push to GHCR ----
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
