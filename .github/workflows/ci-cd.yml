@@ -63,7 +63,7 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@master
         with:
           args: >
-            -Dsonar.organization=${{ secrets.SONAR_ORG }}
+            -Dsonar.organization=${{ secrets.SONAR_ORG }}  #added org
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
         env:
