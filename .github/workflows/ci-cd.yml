@@ -64,7 +64,7 @@ jobs:
         with:
           args: >
             -Dsonar.organization=${{ secrets.SONAR_ORG }}  #added org
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}  #here sonar project key
             -Dsonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
