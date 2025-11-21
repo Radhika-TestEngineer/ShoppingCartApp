@@ -1,100 +1,77 @@
-name: CI / CD - Build, Test, Sonar, Push to GHCR
+name: ShoppingCartApp CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  packages: write
-  id-token: write
-
-env:
-  IMAGE_NAME: ghcr.io/radhika-testengineer/shoppingcartapp
 
 jobs:
-  build-and-test:
+  build-test-sonar-docker:
     runs-on: ubuntu-latest
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore
-        run: dotnet restore src.sln
+      - name: Restore dependencies
+        run: dotnet restore
 
       - name: Build
-        run: dotnet build src.sln -c Release --no-restore
+        run: dotnet build --configuration Release --no-restore
 
-      - name: Test with coverage (Coverlet XPlat)
+      - name: Run Tests + Coverage
         run: |
-          dotnet test tests/ShoppingCart.Tests/ShoppingCart.Tests.csproj             -c Release             --no-build             --logger "trx;LogFileName=test_results.trx"             --collect:"XPlat Code Coverage"
-        continue-on-error: false
+          dotnet test --configuration Release --no-build \
+            /p:CollectCoverage=true \
+            /p:CoverletOutputFormat=cobertura \
+            /p:CoverletOutput=./coverage/
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: '**/TestResults/**'
-
-  sonarcloud:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '8.0.x'
-
+      # ---- SonarCloud Scan ----
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        with:
-          args: >
-            -Dsonar.organization=${{ secrets.SONAR_ORG }}  #added org
-            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}  #here sonar project key
-            -Dsonar.cs.opencover.reportsPaths=**/coverage.cobertura.xml
+        uses: SonarSource/sonarqube-scan-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  build-and-push-image:
-    needs: [sonarcloud]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      # Optional but recommended: SonarCloud quality gate
+      - name: SonarCloud Quality Gate
+        uses: SonarSource/sonarqube-quality-gate-action@v1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
+      # ---- Docker Build & Push to GHCR ----
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT_3}}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.IMAGE_NAME }}:latest
+            ghcr.io/radhika-testengineer/shoppingcartapp:latest
+            ghcr.io/radhika-testengineer/shoppingcartapp:${{ github.sha }}
+
+      # ---- Render Deployment ----
+      - name: Deploy to Render (Container)
+        run: |
+          curl -X POST \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            --data '{
+              "serviceId": "YOUR_RENDER_SERVICE_ID",
+              "image": {
+                "imagePath": "ghcr.io/radhika-testengineer/shoppingcartapp:latest"
+              }
+            }' \
+            https://api.render.com/v1/services/YOUR_RENDER_SERVICE_ID/deploys
