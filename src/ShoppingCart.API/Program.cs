@@ -94,6 +94,9 @@ app.MapControllers();
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
+app.MapGet("/", () => "ShoppingCart API is running!");
+
+
 app.Run();
 
 
