@@ -20,6 +20,7 @@ if (app.Environment.IsDevelopment())
 app.MapControllers();
 
 app.Run();*/
+
 using ShoppingCart.Core.Services;
 using ShoppingCart.Infrastructure.Services;
 
@@ -36,6 +37,10 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// Add root endpoint
+app.MapGet("/", () => "ShoppingCart API is running on Render!");
+
 app.MapControllers();
 
 app.Run();
+
