@@ -196,6 +196,7 @@ app.UseSwaggerUI(c => c.RoutePrefix = "swagger");
 
 // THIS WILL RETURN 200 INSTANTLY
 app.MapGet("/", () => "WORKING - Deployed at " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + " UTC");
+app.MapGet("/", () => "ShoppingCart API is LIVE on Render! 🚀 Visit /swagger for docs.");
 
 app.MapControllers();
 
