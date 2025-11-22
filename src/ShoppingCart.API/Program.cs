@@ -1,4 +1,4 @@
-using ShoppingCart.Core.Services;
+/*using ShoppingCart.Core.Services;
 using ShoppingCart.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +16,25 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.MapControllers();
+
+app.Run();*/
+using ShoppingCart.Core.Services;
+using ShoppingCart.Infrastructure.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+builder.Services.AddSingleton<ICartService, CartService>();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Enable Swagger ALWAYS (Prod + Dev)
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapControllers();
 
