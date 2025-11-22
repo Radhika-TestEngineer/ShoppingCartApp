@@ -223,14 +223,15 @@ app.UseSwagger();
 app.UseSwaggerUI(c => c.RoutePrefix = "swagger");
 
 // THIS SINGLE LINE FIXES THE HEALTH-CHECK SHUTDOWN FOREVER
-app.MapMethods("/", new[] { "GET", "HEAD" }, () =>
+/*app.MapMethods("/", new[] { "GET", "HEAD" }, () =>
     Results.Text(
         $"ShoppingCart API is healthy! Deployed: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
-        "text/plain"));
+        "text/plain"));*/
+app.MapMethods("/", new[] { "GET", "HEAD" }, () =>
+    Results.Text("ShoppingCart API LIVE అయింది బ్రో! 🛒 " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + " UTC", "text/plain"));
 
 app.MapControllers();
 
 app.Run();
-
 
 
