@@ -133,7 +133,7 @@ app.MapGet("/", () => Results.Content(@"
 // Your real API endpoints
 app.MapControllers();
 
-app.Run();*/
+app.Run();
 
 
 
@@ -169,6 +169,35 @@ app.MapGet("/", () => Results.Content(
 app.MapControllers();
 
 app.MapGet("/health", () => "OK"); // Render sometimes pings this
+
+app.Run();*/
+
+
+// RENDER-FIXED PROGRAM.CS — WORKS 100% AS OF NOV 2025
+using ShoppingCart.Core.Services;
+using ShoppingCart.Infrastructure.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// CRITICAL: Bind to Render's port BEFORE building
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+builder.Services.AddControllers();
+builder.Services.AddSingleton<ICartService, CartService>();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Swagger always on
+app.UseSwagger();
+app.UseSwaggerUI(c => c.RoutePrefix = "swagger");
+
+// THIS WILL RETURN 200 INSTANTLY
+app.MapGet("/", () => "WORKING - Deployed at " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + " UTC");
+
+app.MapControllers();
 
 app.Run();
 
