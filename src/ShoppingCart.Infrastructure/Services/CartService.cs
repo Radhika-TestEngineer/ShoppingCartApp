@@ -1,25 +1,38 @@
 using ShoppingCart.Core.Models;
-using ShoppingCart.Core.Services;
+using System.Collections.Generic;         // REQUIRED
+using ShoppingCart.Core.Models;           // For CartItem, Product
+using ShoppingCart.Core.Services;         // For ICartService
 
 namespace ShoppingCart.Infrastructure.Services
 {
     public class CartService : ICartService
     {
-        private readonly List<CartItem> _items = new();
+        private List<CartItem> _items = new List<CartItem>();
+
+        public List<CartItem> GetItems()
+        {
+            return _items;
+        }
 
         public void AddToCart(Product product)
         {
-            var existing = _items.FirstOrDefault(x => x.Product.Id == product.Id);
-
-            if (existing == null)
-                _items.Add(new CartItem { Product = product, Quantity = 1 });
-            else
-                existing.Quantity++;
+            _items.Add(new CartItem
+            {
+                ProductId = product.Id,
+                Name = product.Name,
+                Price = product.Price,
+                Quantity = 1
+            });
         }
 
-        public List<CartItem> GetItems() => _items;
-
-        public decimal GetTotal() =>
-            _items.Sum(x => x.Product.Price * x.Quantity);
+        public decimal GetTotal()
+        {
+            decimal total = 0;
+            foreach (var item in _items)
+            {
+                total += item.Price * item.Quantity;
+            }
+            return total;
+        }
     }
 }
