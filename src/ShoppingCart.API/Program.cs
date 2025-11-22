@@ -174,7 +174,7 @@ app.Run();*/
 
 
 // RENDER-FIXED PROGRAM.CS — WORKS 100% AS OF NOV 2025
-using ShoppingCart.Core.Services;
+/*using ShoppingCart.Core.Services;
 using ShoppingCart.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -197,6 +197,36 @@ app.UseSwaggerUI(c => c.RoutePrefix = "swagger");
 // THIS WILL RETURN 200 INSTANTLY
 app.MapGet("/", () => "WORKING - Deployed at " + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + " UTC");
 app.MapGet("/", () => "ShoppingCart API is LIVE on Render! 🚀 Visit /swagger for docs.");
+
+app.MapControllers();
+
+app.Run();*/
+
+// RENDER-PROOF Program.cs — 100% stable as of Nov 2025
+using ShoppingCart.Core.Services;
+using ShoppingCart.Infrastructure.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Render port binding (MUST be before Build())
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+builder.Services.AddControllers();
+builder.Services.AddSingleton<ICartService, CartService>();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI(c => c.RoutePrefix = "swagger");
+
+// THIS SINGLE LINE FIXES THE HEALTH-CHECK SHUTDOWN FOREVER
+app.MapMethods("/", new[] { "GET", "HEAD" }, () =>
+    Results.Text(
+        $"ShoppingCart API is healthy! Deployed: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC",
+        "text/plain"));
 
 app.MapControllers();
 
