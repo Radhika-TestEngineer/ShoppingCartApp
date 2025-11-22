@@ -19,7 +19,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapControllers();
 
-app.Run();*/
+app.Run();
 
 using ShoppingCart.Core.Services;
 using ShoppingCart.Infrastructure.Services;
@@ -42,5 +42,34 @@ app.MapGet("/", () => "ShoppingCart API is running on Render!");
 
 app.MapControllers();
 
+app.Run();*/
+
+
+using ShoppingCart.Core.Services;
+using ShoppingCart.Infrastructure.Services;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Bind to Render PORT
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
+builder.Services.AddControllers();
+builder.Services.AddSingleton<ICartService, CartService>();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Enable Swagger ALWAYS (Prod + Dev)
+app.UseSwagger();
+app.UseSwaggerUI();
+
+// Root endpoint
+app.MapGet("/", () => "ShoppingCart API is running on Render!");
+
+app.MapControllers();
+
 app.Run();
+
 
